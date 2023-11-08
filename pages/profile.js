@@ -13,7 +13,7 @@ export async function getServerSideProps(context) {
   return { props: { session } };
 }
 
-export default function Dashboard() {
+export default function Profile() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -21,24 +21,17 @@ export default function Dashboard() {
     router.push('/login');
     return null;
   }
-  const handleLogout = async () => {
-    await signOut({ redirect: false });
-  };
+ 
   return (
     <Layout>
       <div className="col-md-12 ">
         <div className="container">
-          <h1>Welcome to Admin Dashboard</h1>
+          <h1>Profile Page</h1>
           {session && session.user.name && (
             <>
-              <p>Hello, {session.user.name}</p>
-              <button
-                className="btn btn-sm btn-danger"
-                onClick={handleLogout}
-                style={{ width: '100px', height: '30px' }}
-              >
-                Logout
-              </button>
+              <p>Name: {session.user.name}</p>
+              <p>Email: {session.user.email}</p>
+              <p>ID: {session.user.id}</p>
             </>
           )}
         </div>
