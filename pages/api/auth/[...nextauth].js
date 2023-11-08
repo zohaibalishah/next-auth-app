@@ -1,6 +1,12 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { getUserByEmail } from '@/utils/users.data';
+import { databaseConnection } from '@/config/dbConfig';
+import User from '@/models/user.model';
+import bcryptjs from 'bcryptjs';
+
+databaseConnection();
+
 export const authOptions = {
   session: {
     stategy: 'jwt',
@@ -16,16 +22,20 @@ export const authOptions = {
           throw new Error('Email and password are required');
         }
 
-        const checkuser = getUserByEmail(email);
+        const checkuser = await User.findOne({ email });
         if (!checkuser) {
           throw new Error('User not found');
         }
 
-        if (checkuser.password !== password) {
+        const isPasswordValid = await bcryptjs.compare(
+          password,
+          checkuser.password
+        );
+        if (!isPasswordValid) {
           throw new Error('Invalid password');
         }
         const user = {
-          id: checkuser.id,
+          id: checkuser._id,
           name: checkuser.name,
           email: checkuser.email,
         };

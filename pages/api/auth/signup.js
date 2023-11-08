@@ -1,5 +1,9 @@
 import { addUser, getUserByEmail } from '@/utils/users.data';
+import { databaseConnection } from '@/config/dbConfig';
+import User from '@/models/user.model';
+import bcryptjs from 'bcryptjs';
 
+databaseConnection();
 export default async function signup(request, response) {
   const { method } = request;
   switch (method) {
@@ -8,12 +12,21 @@ export default async function signup(request, response) {
       if (!name || !email || !password) {
         response.status(400).json({ error: 'All fields are required' });
       }
-      const existingUser = getUserByEmail(email);
-      if (existingUser) {
+      const user = await User.findOne({ email });
+      if (user) {
         response.status(400).json({ error: 'Email already exists' });
       }
-      addUser(name, email, password);
-      response.status(200).json({ message: 'User signup successfully' });
+      const salt = await bcryptjs.genSalt(10);
+      const hashedPassword = await bcryptjs.hash(password, salt);
+
+      const result = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+      });
+      response
+        .status(200)
+        .json({ message: 'User signup successfully', result });
       break;
     default:
       response.setHeader('Allow', ['POST']);
